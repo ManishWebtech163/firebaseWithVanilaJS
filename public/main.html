@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+
+  <!-- Compiled and minified CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+
+
+</head>
+
+<body>
+  <nav>
+    <div class="nav-wrapper #fbc02d yellow darken-2">
+      <a href="#" class="brand-logo">Job portal</a>
+      <ul id="nav-mobile" class="right">
+        <li id="loginli"><a class="modal-trigger" href="#modal2">Login</a></li>
+        <li id="signupli"><a class="waves-effect waves-light btn modal-trigger" href="#modal1">Signup</a></li>
+        <li id="logoutli" onclick="logout()"><a>Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+  <!--Signup Modal -->
+  <div style="background-color: red; padding: 2rem;">
+    <div class="modal-content">
+      <h4>Signup</h4>
+      <form autocomplete="off" onsubmit="signup(event)">
+        <input type="text" id="userNameSignUp" placeholder="User Name" />
+        <input type="email" id="signupEmail" placeholder="email" />
+        <input type="password" id="signupPassword" placeholder="password" />
+        <button class="btn waves-effect #fbc02d yellow darken-2" type="submit">submit</button>
+      </form>
+      <button class="btn waves-effect blue" onclick="signWithGoogle()">Login with google</button>
+
+
+    </div>
+  </div>
+
+  <!--login Modal -->
+  <div style="background-color: green; padding: 2rem;">
+    <div class="modal-content" onsubmit="signIn(event)">
+      <h4>Login</h4>
+      <form autocomplete="off">
+        <input type="email" id="loginEmail" placeholder="email" />
+        <input type="password" id="loginPassword" placeholder="password" />
+        <button class="btn waves-effect #fbc02d yellow darken-2" type="submit">submit</button>
+      </form>
+      <button class="btn waves-effect blue">Login with google</button>
+
+
+    </div>
+  </div>
+  <!--edit profile -->
+  <div style="background-color: #222; padding: 2rem;">
+    <div class="modal-content">
+      <h4 class="text-lighten">Edit your details</h4>
+      <form autocomplete="off" id="editProfile">
+        <div class="file-field input-field">
+          <div class="btn #fbc02d yellow darken-2">
+            <span>File</span>
+            <input type="file" accept="image/*" onchange="uploadImg(event)" />
+          </div>
+          <div class="file-path-wrapper">
+            <input class="file-path validate" type="text">
+          </div>
+        </div>
+        <input type="email" name="profileEmail" placeholder="email" />
+        <input type="text" name="name" placeholder="name" />
+        <input type="text" name="phoneno" placeholder="phoneno" />
+        <input type="text" name="specialty" placeholder="speciality" />
+        <input type="text" name="prorfolioUrl" placeholder="protfolio url" />
+        <input type="text" name="experience" placeholder="experience" />
+
+        <button class="btn waves-effect #fbc02d yellow darken-2" type="submit">submit</button>
+      </form>
+
+
+
+    </div>
+  </div>
+
+
+  <div class="center">
+    <h1>your account details</h1>
+    <img id="proimg" class="circle" src="./assets/noimage.png" alt="noimage" style="width: 100px;height: auto;" />
+    <div class="userDetails"></div>
+  </div>
+
+  <table style="padding:5rem; margin: 2rem 0;">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>speciality</th>
+        <th>ex</th>
+        <th>portfolio</th>
+      </tr>
+    </thead>
+
+    <tbody id="tbody">
+      <tr id="userRow">
+        <th>manish</th>
+        <th>pnchal</th>
+        <th>Phone</th>
+        <th>speciality</th>
+        <th>ex</th>
+        <th>portfolio</th>
+      </tr>
+    </tbody>
+  </table>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+
+
+  <!-- ----add firebse in project---- -->
+  <script src="https://www.gstatic.com/firebasejs/9.4.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.4.0/firebase-storage.js"></script>
+
+  <script type="module">
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDNfGsDFW6OdFdx5-B51EWgPAV_2cGw9BQ",
+      authDomain: "learn-firebase-714de.firebaseapp.com",
+      projectId: "learn-firebase-714de",
+      storageBucket: "learn-firebase-714de.appspot.com",
+      messagingSenderId: "21781890124",
+      appId: "1:21781890124:web:89c85a1269c7d6eea720e9"
+    };
+
+    firebase.initializeApp(firebaseConfig)
+
+    const auth = firebase.auth()
+    const storage = firebase.storage()
+
+
+    // ---get user detials---
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        console.log(user)
+        const uid = user.uid;
+        getUserInfo(user.uid)
+
+      } else {
+        console.log("not user")
+        getUserInfo(null)
+      }
+    })
+
+  </script>
+  <script>
+    async function uploadImg(event) {
+      const uid = firebase.auth().currentUser.uid
+      let file = event.target.files[0]
+      console.log(uid)
+      const fileRef = storage.ref().child(`users/${uid}/profile`)
+      const uploadTask = fileRef.put(file)
+      uploadTask.on(
+        'state_changed',
+        function (snapshot) {
+          // Handle progress, such as showing a progress bar
+          var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log('Upload progress: ' + progress + '%');
+        },
+        function (error) {
+          // Handle unsuccessful uploads
+          console.error('Upload failed: ' + error);
+        },
+        function () {
+          // Handle successful uploads
+          console.log('Upload completed');
+        }
+      );
+
+
+    }
+  </script>
+  <script src="../scripts/localStorageFunctions.js"></script>
+  <script src="../scripts/auth.js"></script>
+  <script src="../scripts/googleAuth.js"></script>
+  <script src="../scripts/createUserCollection.js"></script>
+
+</body>
+
+</html>
